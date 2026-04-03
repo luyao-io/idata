@@ -1,0 +1,67 @@
+{
+  "openai": {
+    "baseUrl": "http://msgw-aibot-dev.fullgoal.com.cn/v1",
+    "model": "Qwen3-Coder",
+    "temperature": 0.5,
+    "recursion_limit": 100,
+    "max_tokens": 32768
+  },
+  "app": {
+    "postUrl": "http://192.168.40.123:8101/main/syncRequest",
+    "rc4key": "FullG@l2025",
+    "maxResultSize": 20,
+    "time_out": 600,
+    "max_connections": 10,
+    "max_keepalive_connections": 10
+  },
+  "redis": {
+    "host": "172.17.0.1",
+    "port": 6379,
+    "password": "Os@1234567890",
+    "db": 0
+  },
+  "oauth": {
+    "client_id": "763681b0bf4cca4f0558",
+    "client_secret": "bbbff89550c7464081884d1d149a9217c27f",
+    "auth_url": "https://iam-uat.fullgoal.com.cn/esc-sso/oauth2.0/authorize",
+    "redirect_url": "https://dsp-uat.fullgoal.com.cn/idata/index/",
+    "access_token_url": "http://msgw-ssoi-uat.fullgoal.com.cn/esc-sso/oauth2.0/accessToken",
+    "profile_url": "http://msgw-ssoi-uat.fullgoal.com.cn/esc-sso/oauth2.0/profile"
+  },
+  "llm_key": {
+    "llm_key_url": "http://10.4.41.110:8009/oneapi/tokens/query_quota"
+  },
+  "verticadb": {
+    "database": "FGEDW",
+    "host": "192.168.40.111",
+    "port": "5433",
+    "tlsmode": "disable",
+    "credentials_file": "account.csv"
+  },
+    "postgresqldb": {
+    "database": "idatamemorydb",
+    "host": "192.168.41.173",
+    "port": "5432",
+    "tlsmode": "disable",
+    "user": "fuguo",
+    "password": "fuguo"
+  },
+
+  "web": {
+    "host": "0.0.0.0",
+    "port": 8023
+  },
+  "kafka": {
+    "bootstrap_servers": [
+      "192.168.40.228:9092",
+      "192.168.40.229:9092",
+      "192.168.40.230:9092"
+    ],
+    "topic": "idata",
+    "zookeeper_servers": [
+      "192.168.40.228:2181",
+      "192.168.40.229:2181",
+      "192.168.40.230:2181"
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+# {QUERY_NAME}
+
+## 查询目的
+{QUERY_PURPOSE}
+
+## SQL查询
+```sql
+{SQL_QUERY}
+```
+
+## 查询说明
+{QUERY_DESCRIPTION}
+
+## 条件说明
+{PARAMETER_DESCRIPTION}
+
+## 业务场景
+{BUSINESS_SCENARIO}
+
+## 问题说明
+{PARAMETER_DESCRIPTION}
+
+## 优化建议
+{OPTIMIZATION_SUGGESTIONS}

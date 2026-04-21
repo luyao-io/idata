@@ -17,8 +17,6 @@ from langchain_core.messages.utils import trim_messages, count_tokens_approximat
 from config import load_config
 from config.context import request_user
 
-# 动态加载技能
-skills_list = []
 config = load_config()
 
 @before_model
@@ -83,11 +81,12 @@ class SkillMiddleware(AgentMiddleware):
                 skills_dict[user_skill["name"]] = user_skill
             SKILLS = list(skills_dict.values())
 
+        local_skills_list = []
         for skill in SKILLS:
-            skills_list.append(
+            local_skills_list.append(
                 f"- **{skill['name']}**: {skill['description']}"
             )
-        self.skills_prompt = "\n".join(skills_list)
+        self.skills_prompt = "\n".join(local_skills_list)
 
     def wrap_model_call(
         self,

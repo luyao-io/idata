@@ -97,6 +97,12 @@ class WebConfig(Base):
     host: str = "0.0.0.0"
     port: int = 8023
 
+class OfflineLoginDB(Base):
+    db_username: str = "root"
+    db_password: str = "fullgoal"
+    db_ip: str = "192.168.40.123"
+    db_port: int = 3306
+
 
 class Config(BaseSettings):
     """Root configuration for SQLAgent."""
@@ -110,5 +116,6 @@ class Config(BaseSettings):
     postgresqldb: PostgresDatabaseConfig = PostgresDatabaseConfig()
     kafka: KafkaConfig = KafkaConfig()
     web: WebConfig = WebConfig()
+    offline_login: OfflineLoginDB = OfflineLoginDB()
 
     model_config = ConfigDict(env_prefix="SQLAGENT_", env_nested_delimiter="__")

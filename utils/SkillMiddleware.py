@@ -2,7 +2,8 @@ from langchain.agents.middleware import ModelRequest, ModelResponse, AgentMiddle
 
 import os
 from langchain.messages import SystemMessage
-from typing import Callable
+from typing import Annotated, List, Callable
+from operator import add
 from utils.skill_loader import load_skills_from_directory
 from tools.tools import load_skill, execute_sql, search_memory, read_file, write_file, edit_file, list_directory, \
     write_memory
@@ -18,7 +19,7 @@ from config import load_config
 from config.context import request_user
 
 # 动态加载技能
-skills_list = []
+# skills_list = []
 config = load_config()
 
 @before_model
@@ -52,7 +53,7 @@ def trim_history_middleware(state: AgentState, runtime: Runtime) -> dict[str, An
     }
 
 class CustomState(AgentState):
-    skills_loaded:list[str]  # Track which skills have been loaded  #
+    skills_loaded: Annotated[List[str], add]  # Track which skills have been loaded  #
 
 class SkillMiddleware(AgentMiddleware):
     """Middleware that injects skill descriptions into the system prompt."""
@@ -82,7 +83,7 @@ class SkillMiddleware(AgentMiddleware):
             for user_skill in USER_SKILLS:
                 skills_dict[user_skill["name"]] = user_skill
             SKILLS = list(skills_dict.values())
-
+        skills_list = []
         for skill in SKILLS:
             skills_list.append(
                 f"- **{skill['name']}**: {skill['description']}"

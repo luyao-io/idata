@@ -4,7 +4,7 @@
     "model": "Qwen3-Coder",
     "temperature": 0.5,
     "recursion_limit": 100,
-    "max_tokens": 32768
+    "max_tokens": 32748
   },
   "app": {
     "postUrl": "http://192.168.40.123:8101/main/syncRequest",
@@ -15,7 +15,7 @@
     "max_keepalive_connections": 10
   },
   "redis": {
-    "host": "172.17.0.1",
+    "host": "192.168.41.173",
     "port": 6379,
     "password": "Os@1234567890",
     "db": 0
@@ -63,5 +63,11 @@
       "192.168.40.229:2181",
       "192.168.40.230:2181"
     ]
+  },
+  "offline_login": {
+    "db_username": "root",
+    "db_password": "fullgoal",
+    "db_ip": "192.168.40.123",
+    "db_port": 3306
   }
 }

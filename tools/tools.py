@@ -16,13 +16,13 @@ MEMORY_PATH = "./longtermmemory"
 
 # Create SQL execution tool
 @tool
-async def execute_sql(sql_query: str, domain: str, runtime: ToolRuntime, ) -> str:
+async def execute_sql(query: str, domain: str, runtime: ToolRuntime, ) -> str:
     """Execute SQL query against the database to get actual data.
     
     Use this tool when you need to retrieve data from the database using SQL.
     
     Args:
-        sql_query (str): The SQL query to execute (required)
+        query (str): The SQL query to execute (required)
         domain (str,required): The business domain or vertical.
                  Optional values: investment-portfolio-analysis, marketing-management-analysis, 
                  external-information-analysis, performance-evaluation-analysis, product-management-analysis.
@@ -39,8 +39,8 @@ async def execute_sql(sql_query: str, domain: str, runtime: ToolRuntime, ) -> st
             f"Use load_skill('{domain}') to load the schema."
         )
 
-    # Check if sql_query is provided
-    if not sql_query:
+    # Check if query is provided
+    if not query:
         return "Error: SQL query is required."
 
     try:
@@ -58,9 +58,9 @@ async def execute_sql(sql_query: str, domain: str, runtime: ToolRuntime, ) -> st
             passwd = user_row['password'].values[0]
             # 使用自定义用户名和密码创建数据库连接
             db = VerticaDatabase(user=user_id, password=passwd)
-            df = await db.execute_query(sql_query)
+            df = await db.execute_query(query)
         else:
-            df = await run_sql(sql_query)
+            df = await run_sql(query)
 
         # Convert the result to a string representation
         if df.empty:
@@ -112,7 +112,7 @@ async def load_skill(skill_name: str, runtime: ToolRuntime) -> Command:
         
     for skill in SKILLS:
         if skill["name"] == skill_name:
-            skill_content = f"Loaded skill: {skill_name}\n\n{skill['content']}"
+            skill_content = f"{skill['content']}"
 
             # Update state to track loaded skill
             return Command(
@@ -258,8 +258,6 @@ async def write_memory(query: str, sql: str, domain: str = "general", memory_typ
     - 业务术语
     - 业务规则
     - 最佳实践
-    - 用户自定义技能
-
     Args:
         query (str): 用户的原始查询语句或知识点描述
         sql (str): 对应的SQL执行语句或知识点内容
@@ -308,66 +306,6 @@ async def write_memory(query: str, sql: str, domain: str = "general", memory_typ
         # 只创建一次LLM实例
         llm = get_tool_llm("Qwen2.5-72B-Instruct", streaming=False)
 
-        # 处理技能创建请求
-        if memory_type == "skill":
-            # 验证技能名称格式
-            skill_name = query.strip().replace(" ", "-").replace("_", "-").lower()
-            skill_name = re.sub(r'[^a-z0-9-]', '', skill_name)  # 只保留小写字母、数字和连字符
-
-            if not skill_name or len(skill_name) < 3:
-                return "错误：技能名称无效，请提供一个至少3个字符的技能名称"
-
-
-
-            # 创建用户技能目录
-            user_skills_dir = Path("users") / user_id / "skills"
-            os.makedirs(user_skills_dir, exist_ok=True)
-
-            # 生成技能
-            skill_dir = user_skills_dir / skill_name
-            if skill_dir.exists():
-                return f"错误：技能 '{skill_name}' 已存在"
-
-            # 创建技能目录
-            skill_dir.mkdir(parents=True, exist_ok=False)
-
-            # 加载skill-creator指南
-            skill_creator_path = Path("skills") / "skill-creator" / "SKILL.md"
-            if skill_creator_path.exists():
-                with open(skill_creator_path, "r", encoding="utf-8") as f:
-                    skill_creator_guide = f.read()
-
-                # 使用LLM根据skill-creator指南生成标准化的技能内容
-                prompt = f"""根据skill-creator指南创建一个新技能：
-
-        技能名称: {query}
-        技能描述: {sql}
-
-        skill-creator指南:
-        {skill_creator_guide}
-
-        请按照skill-creator的指导原则，创建一个完整的SKILL.md文件内容，包含：
-        1. YAML frontmatter (name, description)
-        2. 技能主体内容，遵循skill-creator的最佳实践
-        3. 适当的结构和格式
-
-        请直接返回完整的SKILL.md内容，不要添加额外说明。
-        """
-                # 使用LLm调用添加并发控制装饰器
-                @with_llm_semaphore
-                async def generate_skill_content(prompt):
-                    llm_response = await llm.ainvoke(prompt)
-                    return llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
-                
-                # 使用LLM生成内容
-                generated_content = await generate_skill_content(prompt)
-                
-                # 保存到用户私有目录
-                filename = skill_dir / "SKILL.md"
-                with open(filename, "w", encoding="utf-8") as f:
-                    f.write(generated_content)
-
-                return f"memory写入成功: {filename}"
 
         # 读取对应类型的模板
         if memory_type == "term":

@@ -3,6 +3,7 @@ import time
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import KafkaError
 from config import load_config
+from typing import Optional
 
 
 class KafkaManager:
@@ -10,14 +11,17 @@ class KafkaManager:
     Kafka Manager class that handles both producing and consuming messages
     """
 
-    def __init__(self):
+    def __init__(self, topic: Optional[str] = None):
         """
         Initialize KafkaManager
+        
+        Args:
+            topic (Optional[str]): Kafka topic to use. If not provided, will use topic from config.
         """
         # Load configuration
         config = load_config()
         self.BOOTSTRAP_SERVERS = config.kafka.bootstrap_servers
-        self.TOPIC = config.kafka.topic
+        self.TOPIC = topic if topic is not None else config.kafka.topic
         self.producer = None
         self.consumer = None
 

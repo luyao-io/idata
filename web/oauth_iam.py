@@ -3,9 +3,13 @@ import time
 import secrets
 import httpx
 from urllib.parse import quote
+import base64
+import pymysql
 from fastapi import APIRouter, Response, HTTPException, Request
+from pydantic import BaseModel
 from starlette.responses import JSONResponse, RedirectResponse
 from config import load_config
+from config.context import request_user, request_llm_key
 from utils.redis_client import redis_client
 import json
 from pathlib import Path
@@ -24,6 +28,86 @@ redirect_url = config.oauth.redirect_url
 access_token_url = config.oauth.access_token_url
 profile_url = config.oauth.profile_url
 
+
+db_username = config.offline_login.db_username
+db_password = config.offline_login.db_password
+db_ip = config.offline_login.db_ip
+db_port = config.offline_login.db_port
+
+
+class OfflineLoginRequest(BaseModel):
+    username: str
+    password: str
+
+@oauth_router.post("/offlinelogin")
+async def offline_login(login_data: OfflineLoginRequest, response: Response):
+    try:
+        username = login_data.username
+        password = login_data.password
+
+        # 数据库查询
+        connection = pymysql.connect(
+            host=db_ip,
+            port=db_port,
+            user=db_username,
+            password=db_password,
+            database='apdsp',
+            db='apdsp',
+            charset='utf8mb4',
+        )
+        cursor = connection.cursor()
+        sql = f"select usr_nm from t_sys_usr where usr_id='{username}' and pwd='{password}'"
+        cursor.execute(sql)
+        result = cursor.fetchone()
+        cursor.close()
+        connection.close()
+        usr_nm = result[0]
+        if usr_nm:
+            # 设置cookie
+            # 缓存用户信息到redis
+            llm_key = await get_llm_key(username)
+            raw_token = f"{username}:{int(time.time())}:offlinelogin".encode()
+            access_token = base64.urlsafe_b64encode(raw_token).decode()
+            redis_user_info = {
+                "user_id": username,
+                "user_name": usr_nm,
+                "llm_key": llm_key
+            }
+            request_user.set(username)
+            request_llm_key.set(llm_key)
+
+            await redis_client.setex(
+                name=access_token,
+                time=86400,
+                value=json.dumps(redis_user_info)
+            )
+
+            # 这里存到cookie中备用，可以根据实际情况调整
+            is_https = redirect_url.startswith("https")
+
+            # 写入session_id
+            response.set_cookie(
+                key="access_token",
+                value=access_token,
+                max_age=86400,
+                secure=is_https,
+                httponly=False,
+                samesite="lax" if not is_https else "none"
+            )
+
+            return {
+                "code": 200,
+                "message": "登陆成功",
+                "access_token": access_token
+            }
+        else:
+            return {
+                "code": 401,
+                "message": "用户名或密码错误"
+            }
+
+    except Exception as e:
+        return HTTPException(status_code=500, detail=f"Login Error: {str(e)}")
 
 # 登录(用于获取code，然后自动重定向到/callback)
 @oauth_router.get("/login")

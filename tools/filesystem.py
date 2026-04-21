@@ -21,7 +21,7 @@ def _resolve_user_path(path: str) -> Path:
     user_id = request_user.get()
     
     # 用户空间基目录
-    base_path = Path(f"longtermmemory/users/{user_id}/skills").resolve()
+    base_path = Path(f"longtermmemory/users/{user_id}").resolve()
     print('base_path:', base_path)
     # 处理相对路径
     target_path = (base_path / path).resolve()
